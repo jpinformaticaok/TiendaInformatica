@@ -1,0 +1,52 @@
+@host = http://localhost:5020
+
+### Listar categorías (datos del seeding)
+GET {{host}}/categorias
+
+### Obtener una categoría
+GET {{host}}/categorias/1
+
+### Productos de una categoría
+GET {{host}}/categorias/2/productos
+
+### Crear categoría
+POST {{host}}/categorias
+Content-Type: application/json
+
+{
+  "nombre": "Almacenamiento",
+  "descripcion": "Discos externos y pendrives"
+}
+
+### Listar productos
+GET {{host}}/productos
+
+### Obtener un producto
+GET {{host}}/productos/1
+
+### Crear producto
+POST {{host}}/productos
+Content-Type: application/json
+
+{
+  "nombre": "Monitor 24\" Full HD",
+  "marca": "Samsung",
+  "precio": 180000,
+  "stock": 8,
+  "categoriaId": 2
+}
+
+### Actualizar producto
+PUT {{host}}/productos/1
+Content-Type: application/json
+
+{
+  "nombre": "Notebook 15.6\" i5 16GB",
+  "marca": "Lenovo",
+  "precio": 820000,
+  "stock": 4,
+  "categoriaId": 1
+}
+
+### Eliminar producto
+DELETE {{host}}/productos/6
