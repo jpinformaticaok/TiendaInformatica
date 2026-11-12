@@ -1,0 +1,18 @@
+# ---------- .NET ----------
+bin/
+obj/
+*.user
+*.suo
+
+# ---------- Entorno y secretos ----------
+.env
+.env.*
+!.env.example
+
+# ---------- Editor ----------
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# ---------- Sistema ----------
+.DS_Store

@@ -1,0 +1,27 @@
+# Artefactos de compilación locales (nunca deben entrar a la imagen)
+bin/
+obj/
+
+# Control de versiones y configuración del editor
+.git/
+.gitignore
+.vscode/
+
+# Archivos de entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Archivos de Docker (no hacen falta dentro de la imagen)
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Documentación y pruebas manuales
+README.md
+*.http
+*.md
+
+# Basura del sistema
+**/.DS_Store
+**/*.user

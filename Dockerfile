@@ -4,28 +4,31 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Copiar archivo de proyecto y restaurar dependencias
-COPY *.csproj ./
+# Copiar solo el proyecto y restaurar (aprovecha la caché de capas)
+COPY TiendaInformatica.csproj ./
 RUN dotnet restore
 
-# Copiar todo el código fuente y compilar en modo Release
+# Copiar el resto del código y publicar en Release
 COPY . ./
-RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish TiendaInformatica.csproj -c Release -o /app/publish \
+    /p:UseAppHost=false --no-restore
 
 # ==========================================
 # ETAPA 2: Entorno de Ejecución (Runtime)
 # ==========================================
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS final
 WORKDIR /app
 
-# Copiar los artefactos compilados desde la etapa 'build'
+# Kestrel escucha en 5000 dentro del contenedor (el mapeo al host lo hace compose)
+ENV ASPNETCORE_HTTP_PORTS=5000 \
+    DOTNET_NOLOGO=true \
+    DOTNET_RUNNING_IN_CONTAINER=true
+
 COPY --from=build /app/publish .
 
-# Exponer el puerto configurado en Kestrel
+# Ejecutar como usuario no root (APP_UID viene definido en las imágenes de .NET)
+USER $APP_UID
+
 EXPOSE 5000
 
-# Definir la variable de entorno para que Kestrel escuche en todas las interfaces
-ENV ASPNETCORE_URLS=http://+:5000
-
-# Comando de inicio del contenedor
 ENTRYPOINT ["dotnet", "TiendaInformatica.dll"]

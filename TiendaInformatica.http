@@ -1,5 +1,8 @@
 @host = http://localhost:5020
 
+### Healthcheck (API + base de datos)
+GET {{host}}/health
+
 ### Listar categorías (datos del seeding)
 GET {{host}}/categorias
 
@@ -18,6 +21,15 @@ Content-Type: application/json
   "descripcion": "Discos externos y pendrives"
 }
 
+### Crear categoría inválida (debe devolver 400)
+POST {{host}}/categorias
+Content-Type: application/json
+
+{
+  "nombre": "   ",
+  "descripcion": "Sin nombre"
+}
+
 ### Listar productos
 GET {{host}}/productos
 
@@ -34,6 +46,18 @@ Content-Type: application/json
   "precio": 180000,
   "stock": 8,
   "categoriaId": 2
+}
+
+### Crear producto con categoría inexistente (debe devolver 400)
+POST {{host}}/productos
+Content-Type: application/json
+
+{
+  "nombre": "Monitor roto",
+  "marca": "Samsung",
+  "precio": 1000,
+  "stock": 1,
+  "categoriaId": 999
 }
 
 ### Actualizar producto
