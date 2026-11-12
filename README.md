@@ -63,14 +63,15 @@ Esto crea:
 - `db`: PostgreSQL 17 con volumen `pgdata` (los datos sobreviven a los reinicios).
 - `api`: la API .NET, que espera a que la base esté sana y aplica las migraciones.
 
-La API queda publicada en el puerto `API_PORT` (por defecto `8080`) del host.
+La API queda publicada en el puerto `API_PORT` (por defecto `5001`) del host.
+El puerto `8080` queda reservado para el panel administrativo.
 
 ### 3. Verificar
 
 ```bash
 docker compose ps
-curl http://localhost:8080/health      # {"status":"healthy","database":"up"}
-curl http://localhost:8080/productos
+curl http://localhost:5001/health      # {"status":"healthy","database":"up"}
+curl http://localhost:5001/productos
 ```
 
 ### Comandos útiles
@@ -100,7 +101,7 @@ cat backup.sql | docker compose exec -T db psql -U tienda -d tiendainformatica
 | `POSTGRES_DB` | Nombre de la base | `tiendainformatica` |
 | `POSTGRES_USER` | Usuario de PostgreSQL | `tienda` |
 | `POSTGRES_PASSWORD` | Password (obligatoria) | — |
-| `API_PORT` | Puerto del host para la API | `8080` |
+| `API_PORT` | Puerto del host para la API de productos | `5001` |
 | `CORS_ALLOWED_ORIGINS` | Orígenes permitidos, separados por coma. Vacío = todos | — |
 | `ConnectionStrings__DefaultConnection` | Cadena de conexión completa (alternativa) | — |
 | `Database__ApplyMigrationsOnStartup` | Aplicar migraciones al arrancar | `true` |

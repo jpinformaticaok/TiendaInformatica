@@ -19,8 +19,8 @@ RUN dotnet publish TiendaInformatica.csproj -c Release -o /app/publish \
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS final
 WORKDIR /app
 
-# Kestrel escucha en 5000 dentro del contenedor (el mapeo al host lo hace compose)
-ENV ASPNETCORE_HTTP_PORTS=5000 \
+# Kestrel escucha en 5001 dentro del contenedor (el mapeo al host lo hace compose)
+ENV ASPNETCORE_HTTP_PORTS=5001 \
     DOTNET_NOLOGO=true \
     DOTNET_RUNNING_IN_CONTAINER=true
 
@@ -29,6 +29,6 @@ COPY --from=build /app/publish .
 # Ejecutar como usuario no root (APP_UID viene definido en las imágenes de .NET)
 USER $APP_UID
 
-EXPOSE 5000
+EXPOSE 5001
 
 ENTRYPOINT ["dotnet", "TiendaInformatica.dll"]
