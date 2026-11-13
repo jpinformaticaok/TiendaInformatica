@@ -3,6 +3,25 @@
 ### Healthcheck (API + base de datos)
 GET {{host}}/health
 
+### Listar marcas (datos del seeding)
+GET {{host}}/marcas
+
+### Crear marca
+POST {{host}}/marcas
+Content-Type: application/json
+
+{
+  "nombre": "Samsung"
+}
+
+### Crear marca duplicada (debe devolver 409)
+POST {{host}}/marcas
+Content-Type: application/json
+
+{
+  "nombre": "Lenovo"
+}
+
 ### Listar categorías (datos del seeding)
 GET {{host}}/categorias
 
@@ -42,9 +61,21 @@ Content-Type: application/json
 
 {
   "nombre": "Monitor 24\" Full HD",
-  "marca": "Samsung",
+  "marcaId": 2,
   "precio": 180000,
   "stock": 8,
+  "categoriaId": 2
+}
+
+### Crear producto con marca inexistente (debe devolver 400)
+POST {{host}}/productos
+Content-Type: application/json
+
+{
+  "nombre": "Monitor roto",
+  "marcaId": 999,
+  "precio": 1000,
+  "stock": 1,
   "categoriaId": 2
 }
 
@@ -54,7 +85,7 @@ Content-Type: application/json
 
 {
   "nombre": "Monitor roto",
-  "marca": "Samsung",
+  "marcaId": 1,
   "precio": 1000,
   "stock": 1,
   "categoriaId": 999
@@ -66,7 +97,7 @@ Content-Type: application/json
 
 {
   "nombre": "Notebook 15.6\" i5 16GB",
-  "marca": "Lenovo",
+  "marcaId": 1,
   "precio": 820000,
   "stock": 4,
   "categoriaId": 1

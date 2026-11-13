@@ -118,6 +118,8 @@ doble guion bajo, por ejemplo `Cors__AllowedOrigins=https://midominio.com`.
 | GET | `/categorias/{id}` | Una categoría |
 | GET | `/categorias/{id}/productos` | Productos de una categoría |
 | POST | `/categorias` | Crear categoría |
+| GET | `/marcas` | Lista de marcas con su número de productos |
+| POST | `/marcas` | Crear marca |
 | GET | `/productos` | Lista de productos |
 | GET | `/productos/{id}` | Un producto |
 | POST | `/productos` | Crear producto |
@@ -132,7 +134,13 @@ responden `400` con `{ "error": "..." }`.
 ## Datos del seed
 
 - Categorías: Laptops, Periféricos, Componentes
+- Marcas: Lenovo, ASUS, Redragon, Logitech, Kingston, Corsair
 - 6 productos (notebooks, teclado, mouse, SSD, RAM)
+
+Cada producto pertenece a **una marca** y **una categoría**. Una marca puede tener
+muchos productos. La migración `AgregarMarcas` crea la tabla, genera las marcas del
+seed y reconecta los productos existentes tomando su antigua columna de texto
+`Marca` (las marcas desconocidas se crean solas; las vacías pasan a "Sin marca").
 
 ## Cambiar los datos del seed
 

@@ -26,6 +26,10 @@ ENV ASPNETCORE_HTTP_PORTS=5001 \
 
 COPY --from=build /app/publish .
 
+# Npgsql intenta cargar GSSAPI (Kerberos) al conectar. En Alpine falta esta
+# librería y sin ella imprime un error aunque la conexión funcione igual.
+RUN apk add --no-cache krb5-libs
+
 # Ejecutar como usuario no root (APP_UID viene definido en las imágenes de .NET)
 USER $APP_UID
 

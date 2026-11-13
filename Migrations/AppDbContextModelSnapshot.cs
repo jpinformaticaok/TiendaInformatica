@@ -63,6 +63,59 @@ namespace TiendaInformatica.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TiendaInformatica.Models.Marca", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("Marcas");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Nombre = "Lenovo"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Nombre = "ASUS"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Nombre = "Redragon"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Nombre = "Logitech"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Nombre = "Kingston"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Nombre = "Corsair"
+                        });
+                });
+
             modelBuilder.Entity("TiendaInformatica.Models.Producto", b =>
                 {
                     b.Property<int>("Id")
@@ -74,10 +127,8 @@ namespace TiendaInformatica.Migrations
                     b.Property<int>("CategoriaId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Marca")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
+                    b.Property<int>("MarcaId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -95,6 +146,8 @@ namespace TiendaInformatica.Migrations
 
                     b.HasIndex("CategoriaId");
 
+                    b.HasIndex("MarcaId");
+
                     b.ToTable("Productos");
 
                     b.HasData(
@@ -102,7 +155,7 @@ namespace TiendaInformatica.Migrations
                         {
                             Id = 1,
                             CategoriaId = 1,
-                            Marca = "Lenovo",
+                            MarcaId = 1,
                             Nombre = "Notebook 15.6\" i5 16GB",
                             Precio = 850000m,
                             Stock = 5
@@ -111,7 +164,7 @@ namespace TiendaInformatica.Migrations
                         {
                             Id = 2,
                             CategoriaId = 1,
-                            Marca = "ASUS",
+                            MarcaId = 2,
                             Nombre = "Notebook 14\" Ryzen 7",
                             Precio = 990000m,
                             Stock = 3
@@ -120,7 +173,7 @@ namespace TiendaInformatica.Migrations
                         {
                             Id = 3,
                             CategoriaId = 2,
-                            Marca = "Redragon",
+                            MarcaId = 3,
                             Nombre = "Teclado mecánico",
                             Precio = 45000m,
                             Stock = 20
@@ -129,7 +182,7 @@ namespace TiendaInformatica.Migrations
                         {
                             Id = 4,
                             CategoriaId = 2,
-                            Marca = "Logitech",
+                            MarcaId = 4,
                             Nombre = "Mouse inalámbrico",
                             Precio = 25000m,
                             Stock = 35
@@ -138,7 +191,7 @@ namespace TiendaInformatica.Migrations
                         {
                             Id = 5,
                             CategoriaId = 3,
-                            Marca = "Kingston",
+                            MarcaId = 5,
                             Nombre = "SSD NVMe 1TB",
                             Precio = 70000m,
                             Stock = 15
@@ -147,7 +200,7 @@ namespace TiendaInformatica.Migrations
                         {
                             Id = 6,
                             CategoriaId = 3,
-                            Marca = "Corsair",
+                            MarcaId = 6,
                             Nombre = "Memoria RAM 16GB DDR4",
                             Precio = 48000m,
                             Stock = 12
@@ -162,10 +215,23 @@ namespace TiendaInformatica.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("TiendaInformatica.Models.Marca", "Marca")
+                        .WithMany("Productos")
+                        .HasForeignKey("MarcaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Categoria");
+
+                    b.Navigation("Marca");
                 });
 
             modelBuilder.Entity("TiendaInformatica.Models.Categoria", b =>
+                {
+                    b.Navigation("Productos");
+                });
+
+            modelBuilder.Entity("TiendaInformatica.Models.Marca", b =>
                 {
                     b.Navigation("Productos");
                 });

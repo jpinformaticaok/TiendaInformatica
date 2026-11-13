@@ -87,7 +87,7 @@ categorias.MapGet("/{id:int}/productos", async (int id, AppDbContext db, Cancell
         .AsNoTracking()
         .Where(p => p.CategoriaId == id)
         .OrderBy(p => p.Id)
-        .Select(p => new ProductoResumen(p.Id, p.Nombre, p.Marca, p.Precio, p.Stock))
+        .Select(p => new ProductoResumen(p.Id, p.Nombre, p.MarcaId, p.Marca!.Nombre, p.Precio, p.Stock))
         .ToListAsync(ct));
 
 categorias.MapPost("/", async (CategoriaInput input, AppDbContext db, CancellationToken ct) =>
@@ -109,6 +109,33 @@ categorias.MapPost("/", async (CategoriaInput input, AppDbContext db, Cancellati
         new CategoriaOutput(categoria.Id, categoria.Nombre, categoria.Descripcion, 0));
 });
 
+// ---------- Marcas ----------
+var marcas = app.MapGroup("/marcas");
+
+marcas.MapGet("/", async (AppDbContext db, CancellationToken ct) =>
+    await db.Marcas
+        .AsNoTracking()
+        .OrderBy(m => m.Nombre)
+        .Select(m => new MarcaOutput(m.Id, m.Nombre, m.Productos.Count))
+        .ToListAsync(ct));
+
+marcas.MapPost("/", async (MarcaInput input, AppDbContext db, CancellationToken ct) =>
+{
+    var error = ValidarMarca(input);
+    if (error is not null) return Results.BadRequest(new { error });
+
+    var nombre = input.Nombre.Trim();
+
+    if (await db.Marcas.AnyAsync(m => m.Nombre == nombre, ct))
+        return Results.Conflict(new { error = $"Ya existe la marca '{nombre}'." });
+
+    var marca = new Marca { Nombre = nombre };
+    db.Marcas.Add(marca);
+    await db.SaveChangesAsync(ct);
+
+    return Results.Created($"/marcas/{marca.Id}", new MarcaOutput(marca.Id, marca.Nombre, 0));
+});
+
 // ---------- Productos ----------
 var productos = app.MapGroup("/productos");
 
@@ -117,7 +144,7 @@ productos.MapGet("/", async (AppDbContext db, CancellationToken ct) =>
         .AsNoTracking()
         .OrderBy(p => p.Id)
         .Select(p => new ProductoOutput(
-            p.Id, p.Nombre, p.Marca, p.Precio, p.Stock, p.CategoriaId, p.Categoria!.Nombre))
+            p.Id, p.Nombre, p.MarcaId, p.Marca!.Nombre, p.Precio, p.Stock, p.CategoriaId, p.Categoria!.Nombre))
         .ToListAsync(ct));
 
 productos.MapGet("/{id:int}", async (int id, AppDbContext db, CancellationToken ct) =>
@@ -125,7 +152,7 @@ productos.MapGet("/{id:int}", async (int id, AppDbContext db, CancellationToken 
         .AsNoTracking()
         .Where(p => p.Id == id)
         .Select(p => new ProductoOutput(
-            p.Id, p.Nombre, p.Marca, p.Precio, p.Stock, p.CategoriaId, p.Categoria!.Nombre))
+            p.Id, p.Nombre, p.MarcaId, p.Marca!.Nombre, p.Precio, p.Stock, p.CategoriaId, p.Categoria!.Nombre))
         .FirstOrDefaultAsync(ct) is ProductoOutput producto
         ? Results.Ok(producto)
         : Results.NotFound());
@@ -143,10 +170,18 @@ productos.MapPost("/", async (ProductoInput input, AppDbContext db, Cancellation
     if (nombreCategoria is null)
         return Results.BadRequest(new { error = $"No existe la categoría {input.CategoriaId}." });
 
+    var nombreMarca = await db.Marcas
+        .Where(m => m.Id == input.MarcaId)
+        .Select(m => m.Nombre)
+        .FirstOrDefaultAsync(ct);
+
+    if (nombreMarca is null)
+        return Results.BadRequest(new { error = $"No existe la marca {input.MarcaId}." });
+
     var producto = new Producto
     {
         Nombre = input.Nombre.Trim(),
-        Marca = input.Marca.Trim(),
+        MarcaId = input.MarcaId,
         Precio = input.Precio,
         Stock = input.Stock,
         CategoriaId = input.CategoriaId
@@ -157,8 +192,8 @@ productos.MapPost("/", async (ProductoInput input, AppDbContext db, Cancellation
 
     return Results.Created(
         $"/productos/{producto.Id}",
-        new ProductoOutput(producto.Id, producto.Nombre, producto.Marca, producto.Precio,
-            producto.Stock, producto.CategoriaId, nombreCategoria));
+        new ProductoOutput(producto.Id, producto.Nombre, producto.MarcaId, nombreMarca,
+            producto.Precio, producto.Stock, producto.CategoriaId, nombreCategoria));
 });
 
 productos.MapPut("/{id:int}", async (int id, ProductoInput input, AppDbContext db, CancellationToken ct) =>
@@ -172,8 +207,11 @@ productos.MapPut("/{id:int}", async (int id, ProductoInput input, AppDbContext d
     if (!await db.Categorias.AnyAsync(c => c.Id == input.CategoriaId, ct))
         return Results.BadRequest(new { error = $"No existe la categoría {input.CategoriaId}." });
 
+    if (!await db.Marcas.AnyAsync(m => m.Id == input.MarcaId, ct))
+        return Results.BadRequest(new { error = $"No existe la marca {input.MarcaId}." });
+
     producto.Nombre = input.Nombre.Trim();
-    producto.Marca = input.Marca.Trim();
+    producto.MarcaId = input.MarcaId;
     producto.Precio = input.Precio;
     producto.Stock = input.Stock;
     producto.CategoriaId = input.CategoriaId;
@@ -208,16 +246,24 @@ static string? ValidarCategoria(CategoriaInput input)
     return null;
 }
 
+static string? ValidarMarca(MarcaInput input)
+{
+    if (string.IsNullOrWhiteSpace(input.Nombre))
+        return "El nombre de la marca es obligatorio.";
+    if (input.Nombre.Trim().Length > 80)
+        return "El nombre de la marca no puede superar los 80 caracteres.";
+
+    return null;
+}
+
 static string? ValidarProducto(ProductoInput input)
 {
     if (string.IsNullOrWhiteSpace(input.Nombre))
         return "El nombre es obligatorio.";
     if (input.Nombre.Trim().Length > 150)
         return "El nombre no puede superar los 150 caracteres.";
-    if (string.IsNullOrWhiteSpace(input.Marca))
+    if (input.MarcaId <= 0)
         return "La marca es obligatoria.";
-    if (input.Marca.Trim().Length > 80)
-        return "La marca no puede superar los 80 caracteres.";
     if (input.Precio < 0)
         return "El precio no puede ser negativo.";
     if (input.Stock < 0)
